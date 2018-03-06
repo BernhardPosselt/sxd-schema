@@ -1,16 +1,23 @@
-use sxd_document::dom::{Document};
-//use sxd_document::dom::Element;
+use sxd_document::dom::{Document, Root};
 
-pub struct SchemaMeta<'a> {
-    elements: &'a Vec<&'a str>
+static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
+
+#[derive(PartialEq, Debug)]
+pub enum SchemaVersion {
+    Xsd10,
+    Xsd11,
 }
 
-pub fn parse_version(document: &Document) -> String {
-    String::from("1.0")
+pub struct SchemaMeta<'a> {
+    root: Root<'a>,
+}
+
+pub fn parse_version(document: &Document) -> SchemaVersion {
+    SchemaVersion::Xsd10
 }
 
 pub fn parse_meta<'a>(document: &'a Document) -> SchemaMeta<'a> {
-    SchemaMeta<'a> {
-        elements: &vec!("hi")
+    SchemaMeta {
+        root: document.root()
     }
 }
