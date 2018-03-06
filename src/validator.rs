@@ -1,1 +1,0 @@
-fn validate_schema()

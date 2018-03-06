@@ -1,28 +1,29 @@
 extern crate sxd_document;
 
-use sxd_document::dom::{Document, Root};
-use sxd_document::dom::Element;
+use sxd_document::dom::Document;
+use sxd_document::{parser as DomParser};
+
+mod parser;
+
+use parser::{parse_meta, parse_version, SchemaMeta};
 
 static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
-static XSD_10_SCHEMA_STR: &'static str = include!("schemas/1.0.xsd");
-static XSD_11_SCHEMA_STR: &'static str = include!("schemas/1.1.xsd");
-static XSD_10_SCHEMA_DOCUMENT: &'static Document = parser::parse(&XSD_10_SCHEMA_STR).expect("Failed to parse 1.0 Schema XSD");
-static XSD_11_SCHEMA_DOCUMENT: &'static Document = parser::parse(&XSD_11_SCHEMA_STR).expect("Failed to parse 1.1 Schema XSD");
-static XSD_10_SCHEMA: &'static Schema = Schema {
+static XSD_10_SCHEMA_STR: &'static str = include_str!("schemas/1.0.xsd");
+static XSD_11_SCHEMA_STR: &'static str = include_str!("schemas/1.1.xsd");
+static XSD_10_SCHEMA_DOCUMENT: Document = DomParser::parse(&XSD_10_SCHEMA_STR).expect("Failed to parse 1.0 Schema XSD").as_document();
+static XSD_11_SCHEMA_DOCUMENT: Document = DomParser::parse(&XSD_11_SCHEMA_STR).expect("Failed to parse 1.1 Schema XSD").as_document();
+static XSD_10_SCHEMA: Schema = Schema {
     document: XSD_10_SCHEMA_DOCUMENT,
     version: "1.1",
     meta: parse_meta(&XSD_10_SCHEMA_DOCUMENT),
 };
 
-
-static XSD_11_SCHEMA: &'static Schema = Schema {
+static XSD_11_SCHEMA: Schema = Schema {
     document: XSD_11_SCHEMA_DOCUMENT,
     version: "1.1",
     meta: parse_meta(&XSD_11_SCHEMA_DOCUMENT),
 };
 
-pub struct SchemaMeta<'a> {
-}
 
 pub struct Schema<'a> {
     document: Document<'a>,
@@ -44,17 +45,17 @@ impl <'a> Schema<'a> {
     pub fn from_document(document: Document) -> Result<Schema, SchemaError> {
         let schema = Schema {
             document: document,
-            version: find_version(&document),
+            version: parse_version(&document).as_str(),
             meta: parse_meta(&document),
         };
 
         // validate schema using a schema
-        if (schema.version == "1.0") {
-            XSD_10_SCHEMA.validate(schema)?;
-        } else if(schema.version == "1.1") {
-            XSD_11_SCHEMA.validate(schema)?;
+        if schema.version == "1.0" {
+            XSD_10_SCHEMA.validate(&schema.document)?;
+        } else if schema.version == "1.1" {
+            XSD_11_SCHEMA.validate(&schema.document)?;
         } else {
-            return Err(UnsupportedSchemaVersion(schema.version))
+            return Err(SchemaError::UnsupportedSchemaVersion(&schema.version))
         }
 
         Ok(schema)
@@ -66,9 +67,9 @@ impl <'a> Schema<'a> {
 
 }
 
-fn find_schema_root(root: &Root) -> Option<&Root> {
+/*fn find_schema_root(root: &Root) -> Option<&Root> {
 
-}
+
 
 fn parse_types(root: &Root) -> Vec<XSDType> {
     root.children().iter()
@@ -80,13 +81,11 @@ fn parse_types(root: &Root) -> Vec<XSDType> {
 fn parse_type(child: &Element) -> XSDType {
     println!("{:?}", child.name());
     XSDType::XSDSimpleType(1)
-}
+}}*/
 
 #[cfg(test)]
 mod tests {
     extern crate sxd_document;
-
-    use sxd_document::parser;
     use super::*;
 
     #[test]
@@ -95,11 +94,11 @@ mod tests {
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
         "#;
 
-        let schema_doc = parser::parse(&schema_xml).expect("Failed to parse");
+        let schema_doc = DomParser::parse(&schema_xml).expect("Failed to parse");
         let schema = Schema::from_document(schema_doc.as_document());
 
         let xml = r#"<?xml version="1.0"?><root></root>"#;
-        let doc = parser::parse(&xml).expect("Failed to parse");
+        let doc = DomParser::parse(&xml).expect("Failed to parse");
 
         assert!(schema.is_ok());
         assert!(schema.unwrap().validate(&doc.as_document()).is_ok());
@@ -176,10 +175,10 @@ mod tests {
         </xsd:schema>
         "#;
 
-        let schema_doc = parser::parse(&schema_xml).expect("Failed to parse");
+        let schema_doc = DomParser::parse(&schema_xml).expect("Failed to parse");
         let schema = Schema::from_document(schema_doc.as_document());
 
         assert!(schema.is_ok());
-        assert_eq!(4, schema.unwrap().types.len());
+        assert_eq!("1.0", schema.unwrap().version)
     }
 }
