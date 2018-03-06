@@ -1,0 +1,9 @@
+[package]
+name = "sxd-xsd"
+version = "0.1.0"
+authors = ["Bernhard Posselt <dev@bernhard-posselt.com>"]
+
+[dependencies]
+sxd-xpath = "0.4.1"
+sxd-document = "0.2.6"
+
