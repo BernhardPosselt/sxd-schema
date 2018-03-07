@@ -23,11 +23,6 @@ pub enum SchemaError {
     UnsupportedSchemaVersion,
 }
 
-enum XSDType {
-    XSDComplexType,
-    XSDSimpleType(usize),
-}
-
 impl<'a> Schema<'a> {
 
     pub fn from_document<'b>(document: &'b Document) -> Result<Schema<'b>, SchemaError> {
@@ -43,16 +38,15 @@ impl<'a> Schema<'a> {
         return Ok(schema);
     }
 
+    #[allow(dead_code)]
     fn validate_schema<'b>(schema: Schema<'b>, document: &'b Document) -> Result<Schema<'b>, SchemaError> {
-        let root = document.root();
-
         if schema.version == SchemaVersion::Xsd10 {
             let schema_package = DomParser::parse(&XSD_10_SCHEMA_STR)
                 .expect("Failed to parse 1.0 Schema XSD");
             let schema_document = schema_package.as_document();
             let schema_schema = Schema {
                 version: SchemaVersion::Xsd10,
-                elements: parse_elements(root),
+                elements: parse_elements(schema_document.root()),
             };
             schema_schema.validate(&document)?;
         } else if schema.version == SchemaVersion::Xsd11 {
@@ -61,7 +55,7 @@ impl<'a> Schema<'a> {
             let schema_document = schema_package.as_document();
             let schema_schema = Schema {
                 version: SchemaVersion::Xsd11,
-                elements: parse_elements(root),
+                elements: parse_elements(schema_document.root()),
             };
             schema_schema.validate(&document)?;
         } else {
@@ -71,6 +65,7 @@ impl<'a> Schema<'a> {
         return Ok(schema);
     }
 
+    #[allow(unused_variables)]
     pub fn validate(&self, document: &Document) -> Result<(), SchemaError> {
         Ok(())
     }

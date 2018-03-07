@@ -15,11 +15,12 @@ pub struct Element<'a> {
     pub element_type: &'a str,
 }
 
+#[allow(unused_variables)]
 pub fn parse_version(document: &Document) -> SchemaVersion {
     SchemaVersion::Xsd10
 }
 
-
+#[inline]
 fn is_of_element<'a>(element: &'a DomElement, element_name: &'a str) -> bool {
     let name = element.name();
     return name.namespace_uri() == Some(XSD_NS_URI) && name.local_part() == element_name;
