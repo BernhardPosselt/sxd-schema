@@ -2,6 +2,12 @@ extern crate sxd_document;
 
 use sxd_document::dom::{Document, Root, Element as DomElement};
 
+use types::{
+    XSDType,
+    SimpleType,
+    ComplexType
+};
+
 static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
 
 #[derive(PartialEq, Debug)]
@@ -34,6 +40,24 @@ fn is_element(element: &DomElement) -> bool {
 #[inline]
 fn is_schema(element: &DomElement) -> bool {
     return is_of_element(&element, "schema");
+}
+
+#[inline]
+fn is_type(element: &DomElement) -> bool {
+    return is_of_element(&element, "simpleType") || is_of_element(&element, "complexType");
+}
+
+pub fn parse_type<'a>(element: DomElement<'a>) -> XSDType<'a> {
+    let type_name = element.attribute("name").expect("Element defined without name");
+    if element.name().local_part() == "simpleType" {
+        return XSDType::SimpleType(SimpleType {
+            name: &type_name.value()
+        })
+    } else {
+        return XSDType::ComplexType(ComplexType {
+            name: &type_name.value()
+        })
+    }
 }
 
 pub fn parse_element<'a>(element: DomElement<'a>) -> Element<'a> {

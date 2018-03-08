@@ -1,15 +1,15 @@
 #[allow(dead_code)]
-enum XSDType {
-    XSDComplexType(XSDComplexType),
-    XSDSimpleType(XSDSimpleType),
+pub enum XSDType<'a> {
+    ComplexType(ComplexType<'a>),
+    SimpleType(SimpleType<'a>),
 }
 
 #[allow(dead_code)]
-struct XSDComplexType {
-
+pub struct ComplexType<'a> {
+    pub name: &'a str
 }
 
 #[allow(dead_code)]
-struct XSDSimpleType {
-
+pub struct SimpleType<'a> {
+    pub name: &'a str
 }
