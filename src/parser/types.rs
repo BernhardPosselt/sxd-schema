@@ -1,10 +1,13 @@
-use sxd_document::dom::Element as DomElement;
-use sxd_document::dom::Attribute as DomAttribute;
+use sxd_document::dom::{
+    Element as DomElement,
+    Attribute as DomAttribute,
+};
+use sxd_document::QName;
 
 use parser::is_of_element;
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
-pub enum Primitive {
+pub enum Primitive<'a> {
     String,
     Boolean,
     Decimal,
@@ -21,7 +24,7 @@ pub enum Primitive {
     HexBinary,
     Base64Binary,
     AnyUri,
-    QName,
+    QName(QName<'a>),
     Notation,
 }
 
@@ -229,7 +232,7 @@ pub enum AnyType<'a> {
 }
 
 pub enum AnySimpleType<'a> {
-    Primitive(Primitive),
+    Primitive(Primitive<'a>),
     SimpleType(SimpleType<'a>),
 }
 
