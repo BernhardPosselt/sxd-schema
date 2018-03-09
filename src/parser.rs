@@ -1,16 +1,20 @@
 extern crate sxd_document;
 
-use sxd_document::dom::{Document, Root, Element as DomElement};
+use sxd_document::dom::{
+    Document,
+    Root,
+    Element as DomElement
+};
 
 use types::{
     XSDType,
     SimpleType,
-    ComplexType
+    ComplexType,
 };
 
 static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub enum SchemaVersion {
     Xsd10,
     Xsd11,
@@ -52,11 +56,11 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> XSDType<'a> {
     if element.name().local_part() == "simpleType" {
         return XSDType::SimpleType(SimpleType {
             name: &type_name.value()
-        })
+        });
     } else {
         return XSDType::ComplexType(ComplexType {
             name: &type_name.value()
-        })
+        });
     }
 }
 
@@ -69,15 +73,24 @@ pub fn parse_element<'a>(element: DomElement<'a>) -> Element<'a> {
     };
 }
 
-pub fn parse_elements<'a>(root: Root<'a>) -> Vec<Element<'a>> {
+pub fn find_schema_children<'a>(root: Root<'a>) -> Vec<DomElement<'a>> {
     root.children().iter()
         .filter_map(|&child| child.element())
         .filter(|&element| is_schema(&element))
         .flat_map(|schema_element| schema_element.children().into_iter())
         .filter_map(|child| child.element())
         .filter(|&element| is_element(&element))
-        .map(|element| parse_element(element))
         .collect()
+}
+
+pub fn parse_types<'a>(elements: &Vec<DomElement<'a>>) -> Vec<XSDType<'a>> {
+    return vec![];
+}
+
+pub fn parse_elements<'a>(elements: &Vec<DomElement<'a>>) -> Vec<Element<'a>> {
+    return elements.iter()
+        .map(|&element| parse_element(element))
+        .collect();
 }
 
 #[cfg(test)]
@@ -105,6 +118,8 @@ mod tests {
         let order = schema.elements.get(1).unwrap();
         assert_eq!("xsd:string", order.element_type);
         assert_eq!("comment", order.name);
+
+        let types = schema.types;
     }
 }
 
