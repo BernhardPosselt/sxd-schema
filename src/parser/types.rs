@@ -12,14 +12,14 @@ use parser::{
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
 #[derive(Eq, PartialEq, Debug)]
-pub enum BuiltIn<'a> {
-    String(&'a str),
-    NormalizedString(&'a str),
+pub enum BuiltIn {
+    String,
+    NormalizedString,
     Token,
-    Language(&'a str),
+    Language,
     Name,
     NcName,
-    Id(Id<'a>),
+    Id,
     IdRef,
     IdRefs,
     Entity,
@@ -292,7 +292,7 @@ pub enum AnyType<'a> {
 
 #[derive(Eq, PartialEq, Debug)]
 pub enum AnySimpleType<'a> {
-    BuiltIn(BuiltIn<'a>),
+    BuiltIn(BuiltIn),
     SimpleType(SimpleType<'a>),
 }
 
