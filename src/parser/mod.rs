@@ -41,7 +41,7 @@ mod tests {
     use parser::versions::*;
 
     #[test]
-    fn elements() {
+    fn parse() {
         let xml = include_str!("../../test/data/purchase/purchase.xsd");
         let package = DomParser::parse(&xml).expect("Failed to parse");
         let document = package.as_document();
@@ -60,6 +60,7 @@ mod tests {
 
         let types = schema.types;
         assert_eq!(4, types.len());
+
     }
 
 }
