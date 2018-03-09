@@ -3,18 +3,23 @@ use sxd_document::dom::{
     Attribute as DomAttribute,
 };
 
-use parser::{parse_children, parse_child, is_of_element};
+use parser::{
+    parse_children,
+    parse_child,
+    is_of_element,
+    XSD_NS_URI,
+};
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
 #[derive(Eq, PartialEq, Debug)]
-pub enum BuiltIn {
+pub enum BuiltIn<'a> {
     String,
     NormalizedString,
     Token,
     Language,
     Name,
     NcName,
-    Id,
+    Id(Id<'a>),
     Idref,
     Idrefs,
     Entity,
@@ -53,6 +58,12 @@ pub enum BuiltIn {
     Notation,
 }
 
+#[derive(Eq, PartialEq, Debug)]
+pub struct Id<'a> {
+    pub id: &'a str,
+}
+
+
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#anyURI
 #[derive(Eq, PartialEq, Debug)]
 pub struct AnyUri<'a> {
@@ -69,7 +80,7 @@ pub struct Language<'a> {
 #[derive(Eq, PartialEq, Debug)]
 pub struct Appinfo<'a> {
     pub source: Option<AnyUri<'a>>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub content: &'a str,  // FIXME: this is actually an inlined, mixed complex type
 }
 
@@ -79,15 +90,15 @@ pub struct Documentation<'a> {
     pub source: Option<AnyUri<'a>>,
     // xml:lang
     pub language: Option<Language<'a>>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub content: &'a str,  // FIXME: this is actually an inlined, mixed complex type
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-annotation
 #[derive(Eq, PartialEq, Debug)]
 pub struct Annotation<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub appinfo: Vec<Appinfo<'a>>,
     pub documentation: Vec<Documentation<'a>>,
 }
@@ -95,8 +106,8 @@ pub struct Annotation<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-restriction
 #[derive(Eq, PartialEq, Debug)]
 pub struct Restriction<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     // take from either base or nested simpleType
     pub annotation: Option<Annotation<'a>>,
     pub restriction_type: AnySimpleType<'a>,
@@ -106,8 +117,8 @@ pub struct Restriction<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-minInclusive
 #[derive(Eq, PartialEq, Debug)]
 pub struct MinExclusive<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: &'a str,
     // default false
     pub fixed: bool,
@@ -117,8 +128,8 @@ pub struct MinExclusive<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-minExclusive
 #[derive(Eq, PartialEq, Debug)]
 pub struct MinInclusive<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: &'a str,
     // default false
     pub fixed: bool,
@@ -128,8 +139,8 @@ pub struct MinInclusive<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-maxInclusive
 #[derive(Eq, PartialEq, Debug)]
 pub struct MaxExclusive<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: &'a str,
     // default false
     pub fixed: bool,
@@ -139,8 +150,8 @@ pub struct MaxExclusive<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-maxExclusive
 #[derive(Eq, PartialEq, Debug)]
 pub struct MaxInclusive<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: &'a str,
     // default false
     pub fixed: bool,
@@ -150,8 +161,8 @@ pub struct MaxInclusive<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-whiteSpace
 #[derive(Eq, PartialEq, Debug)]
 pub struct WhiteSpace<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: WhiteSpaceValue,
     // default false
     pub fixed: bool,
@@ -168,8 +179,8 @@ pub enum WhiteSpaceValue {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-totalDigits
 #[derive(Eq, PartialEq, Debug)]
 pub struct TotalDigits<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: usize,
     // default false
     pub fixed: bool,
@@ -179,8 +190,8 @@ pub struct TotalDigits<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-fractionDigits
 #[derive(Eq, PartialEq, Debug)]
 pub struct FractionDigits<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: usize,
     // default false
     pub fixed: bool,
@@ -190,8 +201,8 @@ pub struct FractionDigits<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-pattern
 #[derive(Eq, PartialEq, Debug)]
 pub struct Pattern<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: &'a str,
     pub annotation: Option<Annotation<'a>>,
 }
@@ -199,8 +210,8 @@ pub struct Pattern<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-enumeration
 #[derive(Eq, PartialEq, Debug)]
 pub struct Enumeration<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: &'a str,
     pub annotation: Option<Annotation<'a>>,
 }
@@ -208,8 +219,8 @@ pub struct Enumeration<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-length
 #[derive(Eq, PartialEq, Debug)]
 pub struct Length<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: usize,
     // default false
     pub fixed: bool,
@@ -219,8 +230,8 @@ pub struct Length<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-minLength
 #[derive(Eq, PartialEq, Debug)]
 pub struct MinLength<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: usize,
     // default false
     pub fixed: bool,
@@ -230,8 +241,8 @@ pub struct MinLength<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-maxLength
 #[derive(Eq, PartialEq, Debug)]
 pub struct MaxLength<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub value: usize,
     // default false
     pub fixed: bool,
@@ -257,8 +268,8 @@ pub enum RestrictionRule<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-union
 #[derive(Eq, PartialEq, Debug)]
 pub struct Union<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     pub annotation: Option<Annotation<'a>>,
     pub member_types: Vec<SimpleType<'a>>,  // choose from memberTypes(QName) or nested simpleType
 }
@@ -266,8 +277,8 @@ pub struct Union<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-list
 #[derive(Eq, PartialEq, Debug)]
 pub struct List<'a> {
-    pub id: Option<&'a str>,
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub id: Option<Id<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     // choose from itemType(QName) or nested simpleType
     pub annotation: Option<Annotation<'a>>,
     pub item_type: SimpleType<'a>,
@@ -281,7 +292,7 @@ pub enum AnyType<'a> {
 
 #[derive(Eq, PartialEq, Debug)]
 pub enum AnySimpleType<'a> {
-    BuiltIn(BuiltIn),
+    BuiltIn(BuiltIn<'a>),
     SimpleType(SimpleType<'a>),
 }
 
@@ -302,19 +313,19 @@ pub struct ComplexType<'a> {
     pub is_abstract: bool,
     // block = (#all | List of (extension | restriction))
     // final = (#all | List of (extension | restriction))
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
     // Content: (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?)))
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-simpleType
 #[derive(Eq, PartialEq, Debug)]
 pub struct SimpleType<'a> {
-    pub id: Option<&'a str>,
+    pub id: Option<Id<'a>>,
     pub name: &'a str,
     pub content: Box<SimpleTypeContent<'a>>,
     pub annotation: Option<Annotation<'a>>,
     // final = (#all | List of (list | union | restriction))
-    pub additional_attributes: Vec<&'a DomAttribute<'a>>,
+    pub additional_attributes: Vec<DomAttribute<'a>>,
 }
 
 #[derive(Eq, PartialEq, Debug)]
@@ -336,13 +347,33 @@ pub fn parse_types<'a>(elements: &Vec<DomElement<'a>>) -> Vec<TopLevelType<'a>> 
         .collect()
 }
 
-pub fn parse_annotation<'a> (element: &DomElement<'a>) -> Annotation<'a> {
-    Annotation {
-        id: None,
-        additional_attributes: Vec::new(),
-        appinfo: Vec::new(),
-        documentation: Vec::new(),
-    }
+pub fn parse_id<'a>(element: &DomElement<'a>) -> Option<Id<'a>> {
+    element.attribute("id")
+        .map(|attr| Id { id: &attr.value() })
+}
+
+pub fn parse_additional_attributes<'a>(element: &DomElement<'a>) -> Vec<DomAttribute<'a>> {
+    element.attributes().into_iter()
+        .filter(|&attr| {
+            match attr.name().namespace_uri() {
+                Some(namespace) => namespace != XSD_NS_URI,
+                _ => false
+            }
+        })
+        .collect()
+}
+
+pub fn parse_annotation<'a>(element: &DomElement<'a>) -> Option<Annotation<'a>> {
+    parse_child(&element,
+                |&el| is_of_element(&el, "annotation"),
+                |el| {
+                    Annotation {
+                        id: parse_id(&element),
+                        additional_attributes: Vec::new(),
+                        appinfo: Vec::new(),
+                        documentation: Vec::new(),
+                    }
+                })
 }
 
 pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
@@ -350,10 +381,9 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
     if element.name().local_part() == "simpleType" {
         return TopLevelType::SimpleType(SimpleType {
             name: &type_name.value(),
-            annotation: parse_child(&element,
-                                    |&el| is_of_element(&el, "annotation"),
-                                    |el| parse_annotation(&el)),
-            additional_attributes: vec![],
+            annotation: parse_annotation(&element),
+            additional_attributes: parse_additional_attributes(&element),
+            id: parse_id(&element),
             content: Box::new(SimpleTypeContent::Restriction(Restriction {
                 additional_attributes: vec![],
                 annotation: None,
@@ -362,13 +392,13 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
                 rules: vec![
                     RestrictionRule::Pattern(Pattern {
                         id: None,
-                        additional_attributes: Vec::new(),
+                        additional_attributes: vec![],
                         value: "\\d{3}-[A-Z]{2}",
                         annotation: None,
                     })
                 ],
             })),
-            id: None,
+
         });
     } else {
         return TopLevelType::ComplexType(ComplexType {
