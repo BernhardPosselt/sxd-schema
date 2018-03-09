@@ -38,10 +38,10 @@
   <xs:complexType name="openAttrs">
     <xs:annotation>
       <xs:documentation>
-       This type is extended by almost all schema types
-       to allow attributes from other namespaces to be
-       added to user schemas.
-     </xs:documentation>
+          This type is extended by almost all schema types
+          to allow attributes from other namespaces to be
+          added to user schemas.
+      </xs:documentation>
     </xs:annotation>
     <xs:complexContent>
       <xs:restriction base="xs:anyType">
@@ -77,9 +77,9 @@
   <xs:group name="schemaTop">
     <xs:annotation>
       <xs:documentation>
-   This group is for the
-   elements which occur freely at the top level of schemas.
-   All of their types are based on the "annotated" type by extension.</xs:documentation>
+          This group is for the
+          elements which occur freely at the top level of schemas.
+          All of their types are based on the "annotated" type by extension.</xs:documentation>
     </xs:annotation>
     <xs:choice>
       <xs:group ref="xs:redefinable"/>
