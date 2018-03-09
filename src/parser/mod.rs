@@ -6,13 +6,17 @@ extern crate sxd_document;
 
 use sxd_document::dom::{
     Root,
-    Element as DomElement
+    Element as DomElement,
+    ChildOfElement,
 };
+use std::iter::Filter;
+use std::slice::Iter;
+use std::iter::FilterMap;
 
 static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
 
 #[inline]
-fn is_of_element<'a>(element: &'a DomElement, element_name: &'a str) -> bool {
+fn is_of_element<'a>(element: &'a DomElement, element_name: &str) -> bool {
     let name = element.name();
     return name.namespace_uri() == Some(XSD_NS_URI) && name.local_part() == element_name;
 }
@@ -31,9 +35,41 @@ pub fn find_schema_children<'a>(root: Root<'a>) -> Vec<DomElement<'a>> {
         .collect()
 }
 
+#[inline]
+fn extract_element<'a>(element: &ChildOfElement<'a>) -> Option<DomElement<'a>> {
+    match element {
+        &ChildOfElement::Element(e) => Some(e),
+        _ => None
+    }
+}
+
+/// Selects a matching element from the given element's children and runs the map function on it
+pub fn parse_child<'a, T, F, S>(element: &DomElement<'a>, select_func: S, map_func: F) -> Option<T>
+    where F: Fn(DomElement<'a>) -> T,
+          S: Fn(&DomElement<'a>) -> bool {
+    element.children().iter()
+        .filter_map(|&el| extract_element(&el))
+        .filter(|&el| select_func(&el))
+        .map(map_func)
+        .next()
+}
+
+/// Selects all matching elements from the given element's children and runs the map function on it
+#[allow(dead_code)]
+pub fn parse_children<'a, T, F, S>(element: &DomElement<'a>, select_func: S, map_func: F) -> Vec<T>
+    where F: Fn(DomElement<'a>) -> T,
+          S: Fn(&DomElement<'a>) -> bool {
+    element.children().iter()
+        .filter_map(|&el| extract_element(&el))
+        .filter(|&el| select_func(&el))
+        .map(map_func)
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     extern crate sxd_document;
+
     use sxd_document::parser as DomParser;
 
     use schema::*;
@@ -98,9 +134,6 @@ mod tests {
             id: None,
         });
         assert_eq!(expected, *sku);
-
-
     }
-
 }
 

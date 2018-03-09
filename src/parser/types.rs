@@ -3,7 +3,7 @@ use sxd_document::dom::{
     Attribute as DomAttribute,
 };
 
-use parser::is_of_element;
+use parser::{parse_children, parse_child, is_of_element};
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
 #[derive(Eq, PartialEq, Debug)]
@@ -311,12 +311,23 @@ pub fn parse_types<'a>(elements: &Vec<DomElement<'a>>) -> Vec<TopLevelType<'a>> 
         .collect()
 }
 
+pub fn parse_annotation<'a> (element: &DomElement<'a>) -> Annotation<'a> {
+    Annotation {
+        id: None,
+        additional_attributes: Vec::new(),
+        appinfo: Vec::new(),
+        documentation: Vec::new(),
+    }
+}
+
 pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
     let type_name = element.attribute("name").expect("Element defined without name");
     if element.name().local_part() == "simpleType" {
         return TopLevelType::SimpleType(SimpleType {
             name: &type_name.value(),
-            annotation: None,
+            annotation: parse_child(&element,
+                                    |&el| is_of_element(&el, "annotation"),
+                                    |el| parse_annotation(&el)),
             additional_attributes: vec![],
             content: Box::new(SimpleTypeContent::Restriction(Restriction {
                 additional_attributes: vec![],
