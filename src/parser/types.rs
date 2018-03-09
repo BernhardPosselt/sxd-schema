@@ -13,10 +13,10 @@ use parser::{
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
 #[derive(Eq, PartialEq, Debug)]
 pub enum BuiltIn<'a> {
-    String,
-    NormalizedString,
+    String(&'a str),
+    NormalizedString(&'a str),
     Token,
-    Language,
+    Language(&'a str),
     Name,
     NcName,
     Id(Id<'a>),
