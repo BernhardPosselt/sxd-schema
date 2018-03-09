@@ -6,7 +6,7 @@ use sxd_document::dom::{Document};
 use parser::{find_schema_children};
 use parser::elements::{parse_elements, Element};
 use parser::versions::{parse_version, SchemaVersion};
-use parser::types::{parse_types, XSDType};
+use parser::types::{parse_types, TopLevelType};
 
 static XSD_10_SCHEMA_STR: &'static str = include_str!("parser/schemas/1.0.xsd");
 static XSD_11_SCHEMA_STR: &'static str = include_str!("parser/schemas/1.1.xsd");
@@ -14,7 +14,7 @@ static XSD_11_SCHEMA_STR: &'static str = include_str!("parser/schemas/1.1.xsd");
 pub struct Schema<'a> {
     pub version: SchemaVersion,
     pub elements: Vec<Element<'a>>,
-    pub types: Vec<XSDType<'a>>,
+    pub types: Vec<TopLevelType<'a>>,
 }
 
 #[derive(Debug)]

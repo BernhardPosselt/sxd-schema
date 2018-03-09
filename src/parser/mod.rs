@@ -36,7 +36,6 @@ mod tests {
     extern crate sxd_document;
     use sxd_document::parser as DomParser;
 
-    use super::*;
     use schema::*;
     use parser::versions::*;
 
