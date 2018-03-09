@@ -306,6 +306,7 @@ pub enum TopLevelType<'a> {
 #[derive(Eq, PartialEq, Debug)]
 pub struct ComplexType<'a> {
     pub name: &'a str,
+    pub id: Option<Id<'a>>,
     // defaults to false
     pub is_mixed: bool,
     pub annotation: Option<Annotation<'a>>,
@@ -376,6 +377,12 @@ pub fn parse_annotation<'a>(element: &DomElement<'a>) -> Option<Annotation<'a>> 
                 })
 }
 
+pub fn parse_boolean_attribute<'a>(element: &DomElement<'a>, name: &str, default: bool) -> bool {
+    element.attribute(name)
+        .map(|attr| attr.value() == "true")
+        .unwrap_or(default)
+}
+
 pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
     let type_name = element.attribute("name").expect("Element defined without name");
     if element.name().local_part() == "simpleType" {
@@ -403,10 +410,11 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
     } else {
         return TopLevelType::ComplexType(ComplexType {
             name: &type_name.value(),
-            annotation: None,
-            additional_attributes: vec![],
-            is_mixed: false,
-            is_abstract: false,
+            id: parse_id(&element),
+            annotation: parse_annotation(&element),
+            additional_attributes: parse_additional_attributes(&element),
+            is_mixed: parse_boolean_attribute(&element, "mixed", false),
+            is_abstract: parse_boolean_attribute(&element, "mixed", false),
         });
     }
 }
