@@ -79,16 +79,19 @@ pub fn find_schema_children<'a>(root: Root<'a>) -> Vec<DomElement<'a>> {
         .filter(|&element| is_schema(&element))
         .flat_map(|schema_element| schema_element.children().into_iter())
         .filter_map(|child| child.element())
-        .filter(|&element| is_element(&element))
         .collect()
 }
 
 pub fn parse_types<'a>(elements: &Vec<DomElement<'a>>) -> Vec<XSDType<'a>> {
-    return vec![];
+    return elements.iter()
+        .filter(|&element| is_type(&element))
+        .map(|&element| parse_type(element))
+        .collect();
 }
 
 pub fn parse_elements<'a>(elements: &Vec<DomElement<'a>>) -> Vec<Element<'a>> {
     return elements.iter()
+        .filter(|&element| is_element(&element))
         .map(|&element| parse_element(element))
         .collect();
 }
@@ -120,6 +123,8 @@ mod tests {
         assert_eq!("comment", order.name);
 
         let types = schema.types;
+        assert_eq!(4, types.len());
+
     }
 }
 

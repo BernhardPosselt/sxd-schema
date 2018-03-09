@@ -1,7 +1,6 @@
 extern crate sxd_document;
 
 use sxd_document::{parser as DomParser, Package};
-use sxd_document::parser::Error as DomParserError;
 use sxd_document::dom::{Document};
 
 use parser::{
@@ -55,7 +54,6 @@ fn validate_schema<'b>(schema: Schema<'b>, schema_document: &'b Document) -> Res
     } else {
         return Err(SchemaError::UnsupportedSchemaVersion);
     }
-
     return Ok(schema);
 }
 
@@ -75,8 +73,6 @@ impl<'a> Schema<'a> {
         // return validate_schema(schema, &document);
         return Ok(schema);
     }
-
-
 
     #[allow(unused_variables)]
     pub fn validate(&self, document: &Document) -> Result<(), SchemaError> {
