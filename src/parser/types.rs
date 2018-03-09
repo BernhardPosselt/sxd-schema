@@ -2,12 +2,12 @@ use sxd_document::dom::{
     Element as DomElement,
     Attribute as DomAttribute,
 };
-use sxd_document::QName;
 
 use parser::is_of_element;
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
-pub enum Primitive<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub enum Primitive {
     String,
     Boolean,
     Decimal,
@@ -24,21 +24,24 @@ pub enum Primitive<'a> {
     HexBinary,
     Base64Binary,
     AnyUri,
-    QName(QName<'a>),
+    QName,
     Notation,
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#anyURI
+#[derive(Eq, PartialEq, Debug)]
 pub struct AnyUri<'a> {
     pub uri: &'a str,
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub struct Language<'a> {
     pub iso_code: &'a str,
 }
 
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-appinfo
+#[derive(Eq, PartialEq, Debug)]
 pub struct Appinfo<'a> {
     pub source: Option<AnyUri<'a>>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
@@ -46,6 +49,7 @@ pub struct Appinfo<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-documentation
+#[derive(Eq, PartialEq, Debug)]
 pub struct Documentation<'a> {
     pub source: Option<AnyUri<'a>>,
     // xml:lang
@@ -55,6 +59,7 @@ pub struct Documentation<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-annotation
+#[derive(Eq, PartialEq, Debug)]
 pub struct Annotation<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
@@ -63,6 +68,7 @@ pub struct Annotation<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-restriction
+#[derive(Eq, PartialEq, Debug)]
 pub struct Restriction<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
@@ -73,7 +79,8 @@ pub struct Restriction<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-minInclusive
-struct MinExclusive<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct MinExclusive<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: &'a str,
@@ -83,7 +90,8 @@ struct MinExclusive<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-minExclusive
-struct MinInclusive<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct MinInclusive<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: &'a str,
@@ -93,7 +101,8 @@ struct MinInclusive<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-maxInclusive
-struct MaxExclusive<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct MaxExclusive<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: &'a str,
@@ -103,7 +112,8 @@ struct MaxExclusive<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-maxExclusive
-struct MaxInclusive<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct MaxInclusive<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: &'a str,
@@ -113,7 +123,8 @@ struct MaxInclusive<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-whiteSpace
-struct WhiteSpace<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct WhiteSpace<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: WhiteSpaceValue,
@@ -122,6 +133,7 @@ struct WhiteSpace<'a> {
     pub annotation: Option<Annotation<'a>>,
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub enum WhiteSpaceValue {
     Collapse,
     Preserve,
@@ -129,7 +141,8 @@ pub enum WhiteSpaceValue {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-totalDigits
-struct TotalDigits<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct TotalDigits<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: usize,
@@ -139,7 +152,8 @@ struct TotalDigits<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-fractionDigits
-struct FractionDigits<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct FractionDigits<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: usize,
@@ -149,7 +163,8 @@ struct FractionDigits<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-pattern
-struct Pattern<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct Pattern<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: &'a str,
@@ -157,7 +172,8 @@ struct Pattern<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-enumeration
-struct Enumeration<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct Enumeration<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: &'a str,
@@ -165,7 +181,8 @@ struct Enumeration<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-length
-struct Length<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct Length<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: usize,
@@ -175,7 +192,8 @@ struct Length<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-minLength
-struct MinLength<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct MinLength<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: usize,
@@ -185,7 +203,8 @@ struct MinLength<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-maxLength
-struct MaxLength<'a> {
+#[derive(Eq, PartialEq, Debug)]
+pub struct MaxLength<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
     pub value: usize,
@@ -194,6 +213,7 @@ struct MaxLength<'a> {
     pub annotation: Option<Annotation<'a>>,
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub enum RestrictionRule<'a> {
     MinExclusive(MinExclusive<'a>),
     MinInclusive(MinInclusive<'a>),
@@ -210,6 +230,7 @@ pub enum RestrictionRule<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-union
+#[derive(Eq, PartialEq, Debug)]
 pub struct Union<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
@@ -218,6 +239,7 @@ pub struct Union<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-list
+#[derive(Eq, PartialEq, Debug)]
 pub struct List<'a> {
     pub id: Option<&'a str>,
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
@@ -226,22 +248,26 @@ pub struct List<'a> {
     pub item_type: SimpleType<'a>,
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub enum AnyType<'a> {
     ComplexType(ComplexType<'a>),
     AnySimpleType(AnySimpleType<'a>),
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub enum AnySimpleType<'a> {
-    Primitive(Primitive<'a>),
+    Primitive(Primitive),
     SimpleType(SimpleType<'a>),
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub enum TopLevelType<'a> {
     SimpleType(SimpleType<'a>),
     ComplexType(ComplexType<'a>),
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-complexType
+#[derive(Eq, PartialEq, Debug)]
 pub struct ComplexType<'a> {
     pub name: &'a str,
     // defaults to false
@@ -256,6 +282,7 @@ pub struct ComplexType<'a> {
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-simpleType
+#[derive(Eq, PartialEq, Debug)]
 pub struct SimpleType<'a> {
     pub id: Option<&'a str>,
     pub name: &'a str,
@@ -265,6 +292,7 @@ pub struct SimpleType<'a> {
     pub additional_attributes: Vec<&'a DomAttribute<'a>>,
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub enum SimpleTypeContent<'a> {
     Restriction(Restriction<'a>),
     List(List<'a>),
@@ -295,7 +323,14 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
                 annotation: None,
                 id: None,
                 restriction_type: AnySimpleType::Primitive(Primitive::String),
-                rules: vec![],
+                rules: vec![
+                    RestrictionRule::Pattern(Pattern {
+                        id: None,
+                        additional_attributes: Vec::new(),
+                        value: "\\d{3}-[A-Z]{2}",
+                        annotation: None,
+                    })
+                ],
             })),
             id: None,
         });

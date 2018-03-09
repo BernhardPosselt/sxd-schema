@@ -38,6 +38,14 @@ mod tests {
 
     use schema::*;
     use parser::versions::*;
+    use parser::types::TopLevelType;
+    use parser::types::SimpleType;
+    use parser::types::SimpleTypeContent;
+    use parser::types::Restriction;
+    use parser::types::AnySimpleType;
+    use parser::types::Primitive;
+    use parser::types::RestrictionRule;
+    use parser::types::Pattern;
 
     #[test]
     fn parse() {
@@ -59,6 +67,38 @@ mod tests {
 
         let types = schema.types;
         assert_eq!(4, types.len());
+
+        let sku = types.get(3).unwrap();
+
+        /*
+        <xsd:simpleType name="SKU">
+            <xsd:restriction base="xsd:string">
+                <xsd:pattern value="\d{3}-[A-Z]{2}"/>
+            </xsd:restriction>
+        </xsd:simpleType>
+        */
+        let expected = TopLevelType::SimpleType(SimpleType {
+            name: "SKU",
+            annotation: None,
+            additional_attributes: vec![],
+            content: Box::new(SimpleTypeContent::Restriction(Restriction {
+                additional_attributes: vec![],
+                annotation: None,
+                id: None,
+                restriction_type: AnySimpleType::Primitive(Primitive::String),
+                rules: vec![
+                    RestrictionRule::Pattern(Pattern {
+                        id: None,
+                        additional_attributes: Vec::new(),
+                        value: "\\d{3}-[A-Z]{2}",
+                        annotation: None,
+                    })
+                ],
+            })),
+            id: None,
+        });
+        assert_eq!(expected, *sku);
+
 
     }
 
