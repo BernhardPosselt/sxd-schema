@@ -45,9 +45,9 @@ pub enum XSDType<'a> {
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-complexType
 pub struct ComplexType<'a> {
     pub name: &'a str,
-    pub is_abstract: boolean,
+    pub is_abstract: bool,
     // defaults to false
-    pub is_mixed: boolean,
+    pub is_mixed: bool,
     // defaults to false
     pub annotation: Option<Annotation>,
     // block = (#all | List of (extension | restriction))
@@ -88,7 +88,7 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> XSDType<'a> {
     let type_name = element.attribute("name").expect("Element defined without name");
     if element.name().local_part() == "simpleType" {
         return XSDType::SimpleType(SimpleType {
-            name: &type_name.value()
+            name: &type_name.value(),
         });
     } else {
         return XSDType::ComplexType(ComplexType {
