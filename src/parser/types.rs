@@ -338,7 +338,7 @@ pub struct ComplexType<'a> {
     pub block_modes: HashSet<ComplexBlock>,
     pub final_modes: HashSet<ComplexFinal>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
-    // Content: (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?)))
+    // TODO: Content: (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?)))
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-simpleType
@@ -348,7 +348,6 @@ pub struct SimpleType<'a> {
     pub name: &'a str,
     pub content: Box<SimpleTypeContent<'a>>,
     pub annotation: Option<Annotation<'a>>,
-    // final = (#all | List of (list | union | restriction))
     pub final_modes: HashSet<SimpleFinal>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
 }
