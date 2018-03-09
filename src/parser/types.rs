@@ -9,7 +9,11 @@ use parser::{
     is_of_element,
     XSD_NS_URI,
 };
+use std::collections::HashSet;
 
+/// This is a list of already built in simple types that can be referenced by using
+/// NS:Type, e.g. xsd:string where xsd = http://www.w3.org/2001/XMLSchema
+/// They hold no values since their implementations are built in
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
 #[derive(Eq, PartialEq, Debug)]
 pub enum BuiltIn {
@@ -58,11 +62,11 @@ pub enum BuiltIn {
     Notation,
 }
 
+/// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#ID
 #[derive(Eq, PartialEq, Debug)]
 pub struct Id<'a> {
     pub id: &'a str,
 }
-
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#anyURI
 #[derive(Eq, PartialEq, Debug)]
@@ -302,6 +306,25 @@ pub enum TopLevelType<'a> {
     ComplexType(ComplexType<'a>),
 }
 
+#[derive(Eq, PartialEq, Debug, Hash)]
+pub enum SimpleFinal {
+    Extension,
+    Restriction,
+    Union,
+}
+
+#[derive(Eq, PartialEq, Debug, Hash)]
+pub enum ComplexFinal {
+    Extension,
+    Restriction,
+}
+
+#[derive(Eq, PartialEq, Debug, Hash)]
+pub enum ComplexBlock {
+    Extension,
+    Restriction,
+}
+
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-complexType
 #[derive(Eq, PartialEq, Debug)]
 pub struct ComplexType<'a> {
@@ -312,8 +335,8 @@ pub struct ComplexType<'a> {
     pub annotation: Option<Annotation<'a>>,
     // defaults to false
     pub is_abstract: bool,
-    // block = (#all | List of (extension | restriction))
-    // final = (#all | List of (extension | restriction))
+    pub block_modes: HashSet<ComplexBlock>,
+    pub final_modes: HashSet<ComplexFinal>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
     // Content: (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?)))
 }
@@ -326,6 +349,7 @@ pub struct SimpleType<'a> {
     pub content: Box<SimpleTypeContent<'a>>,
     pub annotation: Option<Annotation<'a>>,
     // final = (#all | List of (list | union | restriction))
+    pub final_modes: HashSet<SimpleFinal>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
 }
 
@@ -389,6 +413,7 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
         return TopLevelType::SimpleType(SimpleType {
             name: &type_name.value(),
             annotation: parse_annotation(&element),
+            final_modes: HashSet::new(),
             additional_attributes: parse_additional_attributes(&element),
             id: parse_id(&element),
             content: Box::new(SimpleTypeContent::Restriction(Restriction {
@@ -415,6 +440,8 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
             additional_attributes: parse_additional_attributes(&element),
             is_mixed: parse_boolean_attribute(&element, "mixed", false),
             is_abstract: parse_boolean_attribute(&element, "mixed", false),
+            block_modes: HashSet::new(),
+            final_modes: HashSet::new(),
         });
     }
 }

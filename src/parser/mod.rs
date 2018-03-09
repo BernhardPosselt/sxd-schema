@@ -82,6 +82,7 @@ mod tests {
     use parser::types::BuiltIn;
     use parser::types::RestrictionRule;
     use parser::types::Pattern;
+    use std::collections::HashSet;
 
     #[test]
     fn parse() {
@@ -116,6 +117,7 @@ mod tests {
         let expected = TopLevelType::SimpleType(SimpleType {
             name: "SKU",
             annotation: None,
+            final_modes: HashSet::new(),
             additional_attributes: vec![],
             content: Box::new(SimpleTypeContent::Restriction(Restriction {
                 additional_attributes: vec![],
