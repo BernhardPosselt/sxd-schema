@@ -79,7 +79,7 @@ mod tests {
     use parser::types::SimpleTypeContent;
     use parser::types::Restriction;
     use parser::types::AnySimpleType;
-    use parser::types::Primitive;
+    use parser::types::BuiltIn;
     use parser::types::RestrictionRule;
     use parser::types::Pattern;
 
@@ -121,7 +121,7 @@ mod tests {
                 additional_attributes: vec![],
                 annotation: None,
                 id: None,
-                restriction_type: AnySimpleType::Primitive(Primitive::String),
+                restriction_type: AnySimpleType::BuiltIn(BuiltIn::String),
                 rules: vec![
                     RestrictionRule::Pattern(Pattern {
                         id: None,

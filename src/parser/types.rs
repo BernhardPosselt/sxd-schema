@@ -7,10 +7,35 @@ use parser::{parse_children, parse_child, is_of_element};
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#built-in-datatypes
 #[derive(Eq, PartialEq, Debug)]
-pub enum Primitive {
+pub enum BuiltIn {
     String,
+    NormalizedString,
+    Token,
+    Language,
+    Name,
+    NcName,
+    Id,
+    Idref,
+    Idrefs,
+    Entity,
+    Entities,
+    NmToken,
+    NmTokens,
     Boolean,
     Decimal,
+    Integer,
+    NonPositiveInteger,
+    NegativeInteger,
+    NonNegativeInteger,
+    PositiveInteger,
+    Long,
+    UnsignedLong,
+    Int,
+    UnsignedInt,
+    Short,
+    UnsignedShort,
+    Byte,
+    UnsignedByte,
     Float,
     Double,
     Duration,
@@ -256,7 +281,7 @@ pub enum AnyType<'a> {
 
 #[derive(Eq, PartialEq, Debug)]
 pub enum AnySimpleType<'a> {
-    Primitive(Primitive),
+    BuiltIn(BuiltIn),
     SimpleType(SimpleType<'a>),
 }
 
@@ -333,7 +358,7 @@ pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {
                 additional_attributes: vec![],
                 annotation: None,
                 id: None,
-                restriction_type: AnySimpleType::Primitive(Primitive::String),
+                restriction_type: AnySimpleType::BuiltIn(BuiltIn::String),
                 rules: vec![
                     RestrictionRule::Pattern(Pattern {
                         id: None,
