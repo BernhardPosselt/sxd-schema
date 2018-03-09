@@ -81,7 +81,7 @@ pub struct Language<'a> {
 pub struct Appinfo<'a> {
     pub source: Option<AnyUri<'a>>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
-    pub content: &'a str,  // FIXME: this is actually an inlined, mixed complex type
+    pub content: DomElement<'a>,
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-documentation
@@ -91,7 +91,7 @@ pub struct Documentation<'a> {
     // xml:lang
     pub language: Option<Language<'a>>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
-    pub content: &'a str,  // FIXME: this is actually an inlined, mixed complex type
+    pub content: DomElement<'a>,
 }
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-annotation
