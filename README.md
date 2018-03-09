@@ -1,5 +1,7 @@
 # SXD Schema
 
+[![Build Status](https://travis-ci.org/BernhardPosselt/sxd-schema.svg?branch=master)](https://travis-ci.org/BernhardPosselt/sxd-schema)
+
 Work in progress
 
 ## Usage
