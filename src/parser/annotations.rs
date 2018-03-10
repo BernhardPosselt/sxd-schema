@@ -19,7 +19,7 @@ pub struct AnyUri<'a> {
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-appinfo
 #[derive(Eq, PartialEq, Debug)]
-pub struct Appinfo<'a> {
+pub struct AppInfo<'a> {
     pub source: Option<AnyUri<'a>>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
     pub content: DomElement<'a>,
@@ -40,7 +40,7 @@ pub struct Documentation<'a> {
 pub struct Annotation<'a> {
     pub id: Option<Id<'a>>,
     pub additional_attributes: Vec<DomAttribute<'a>>,
-    pub appinfo: Vec<Appinfo<'a>>,
+    pub app_info: Vec<AppInfo<'a>>,
     pub documentation: Vec<Documentation<'a>>,
 }
 
@@ -56,7 +56,7 @@ pub fn parse_annotation<'a>(element: &DomElement<'a>) -> Option<Annotation<'a>> 
                     Annotation {
                         id: parse_id(&element),
                         additional_attributes: parse_additional_attributes(&element),
-                        appinfo: Vec::new(),
+                        app_info: Vec::new(),
                         documentation: Vec::new(),
                     }
                 })
