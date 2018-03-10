@@ -7,6 +7,7 @@ use parser::{find_schema_children};
 use parser::elements::{parse_elements, Element};
 use parser::versions::{parse_version, SchemaVersion};
 use parser::types::{parse_types, TopLevelType};
+use parser::annotations::{Annotation, parse_annotations};
 
 static XSD_10_SCHEMA_STR: &'static str = include_str!("parser/schemas/1.0.xsd");
 static XSD_11_SCHEMA_STR: &'static str = include_str!("parser/schemas/1.1.xsd");
@@ -15,6 +16,7 @@ pub struct Schema<'a> {
     pub version: SchemaVersion,
     pub elements: Vec<Element<'a>>,
     pub types: Vec<TopLevelType<'a>>,
+    pub annotations: Vec<Annotation<'a>>,
 }
 
 #[derive(Debug)]
@@ -30,6 +32,7 @@ fn create_schema_spec<'a>(package: &'a Package) -> Schema<'a> {
         version: SchemaVersion::Xsd10,
         elements: parse_elements(&children),
         types: parse_types(&children),
+        annotations: parse_annotations(&children),
     };
 }
 
@@ -60,7 +63,8 @@ impl<'a> Schema<'a> {
         let schema = Schema {
             version: version,
             elements: parse_elements(&children),
-            types: parse_types(&children)
+            types: parse_types(&children),
+            annotations: parse_annotations(&children),
         };
 
         // uncomment once https://github.com/shepmaster/sxd-document/issues/50 is fixed

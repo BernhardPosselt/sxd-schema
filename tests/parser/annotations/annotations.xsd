@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:version="http://www.w3.org/2007/XMLSchema-versioning">
+
+    <xsd:annotation id="annotation1" version:minVersion="1.0">
+        <xsd:documentation xml:lang="en" source="https://docs.com" version:minVersion="1.0">docs</xsd:documentation>
+        <xsd:appinfo source="https://appinfo.com" version:minVersion="1.0">appinfo</xsd:appinfo>
+    </xsd:annotation>
+
+    <xsd:annotation id="annotation2"/>
+
+</xsd:schema>

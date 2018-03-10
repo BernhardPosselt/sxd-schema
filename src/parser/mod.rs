@@ -81,7 +81,6 @@ pub fn parse_child<'a, T, F, S>(element: &DomElement<'a>, select_func: S, map_fu
 }
 
 /// Selects all matching elements from the given element's children and runs the map function on it
-#[allow(dead_code)]
 pub fn parse_children<'a, T, F, S>(element: &DomElement<'a>, select_func: S, map_func: F) -> Vec<T>
     where F: Fn(DomElement<'a>) -> T,
           S: Fn(&DomElement<'a>) -> bool {
@@ -91,6 +90,7 @@ pub fn parse_children<'a, T, F, S>(element: &DomElement<'a>, select_func: S, map
         .map(map_func)
         .collect()
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn parse() {
-        let xml = include_str!("../../test/data/purchase/purchase.xsd");
+        let xml = include_str!("../../tests/parser/mod/purchase.xsd");
         let package = DomParser::parse(&xml).expect("Failed to parse");
         let document = package.as_document();
         let schema = Schema::from_document(&document).expect("Failed to parse schema");
