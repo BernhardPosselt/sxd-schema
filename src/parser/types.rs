@@ -1,15 +1,25 @@
+use std::collections::HashSet;
+
 use sxd_document::dom::{
     Element as DomElement,
     Attribute as DomAttribute,
 };
 
 use parser::{
+    XSD_NS_URI,
     parse_children,
     parse_child,
     is_of_element,
-    XSD_NS_URI,
+    parse_additional_attributes,
+    parse_id,
+    parse_boolean_attribute,
 };
-use std::collections::HashSet;
+
+use parser::annotations::{
+    Annotation,
+    parse_annotation,
+};
+
 
 /// This is a list of already built in simple types that can be referenced by using
 /// NS:Type, e.g. xsd:string where xsd = http://www.w3.org/2001/XMLSchema
@@ -68,44 +78,7 @@ pub struct Id<'a> {
     pub id: &'a str,
 }
 
-/// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#anyURI
-#[derive(Eq, PartialEq, Debug)]
-pub struct AnyUri<'a> {
-    pub uri: &'a str,
-}
 
-#[derive(Eq, PartialEq, Debug)]
-pub struct Language<'a> {
-    pub iso_code: &'a str,
-}
-
-
-/// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-appinfo
-#[derive(Eq, PartialEq, Debug)]
-pub struct Appinfo<'a> {
-    pub source: Option<AnyUri<'a>>,
-    pub additional_attributes: Vec<DomAttribute<'a>>,
-    pub content: DomElement<'a>,
-}
-
-/// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-documentation
-#[derive(Eq, PartialEq, Debug)]
-pub struct Documentation<'a> {
-    pub source: Option<AnyUri<'a>>,
-    // xml:lang
-    pub language: Option<Language<'a>>,
-    pub additional_attributes: Vec<DomAttribute<'a>>,
-    pub content: DomElement<'a>,
-}
-
-/// see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#element-annotation
-#[derive(Eq, PartialEq, Debug)]
-pub struct Annotation<'a> {
-    pub id: Option<Id<'a>>,
-    pub additional_attributes: Vec<DomAttribute<'a>>,
-    pub appinfo: Vec<Appinfo<'a>>,
-    pub documentation: Vec<Documentation<'a>>,
-}
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-restriction
 #[derive(Eq, PartialEq, Debug)]
@@ -369,41 +342,6 @@ pub fn parse_types<'a>(elements: &Vec<DomElement<'a>>) -> Vec<TopLevelType<'a>> 
         .filter(|&element| is_type(&element))
         .map(|&element| parse_type(element))
         .collect()
-}
-
-pub fn parse_id<'a>(element: &DomElement<'a>) -> Option<Id<'a>> {
-    element.attribute("id")
-        .map(|attr| Id { id: &attr.value() })
-}
-
-pub fn parse_additional_attributes<'a>(element: &DomElement<'a>) -> Vec<DomAttribute<'a>> {
-    element.attributes().into_iter()
-        .filter(|&attr| {
-            match attr.name().namespace_uri() {
-                Some(namespace) => namespace != XSD_NS_URI,
-                _ => false
-            }
-        })
-        .collect()
-}
-
-pub fn parse_annotation<'a>(element: &DomElement<'a>) -> Option<Annotation<'a>> {
-    parse_child(&element,
-                |&el| is_of_element(&el, "annotation"),
-                |el| {
-                    Annotation {
-                        id: parse_id(&element),
-                        additional_attributes: Vec::new(),
-                        appinfo: Vec::new(),
-                        documentation: Vec::new(),
-                    }
-                })
-}
-
-pub fn parse_boolean_attribute<'a>(element: &DomElement<'a>, name: &str, default: bool) -> bool {
-    element.attribute(name)
-        .map(|attr| attr.value() == "true")
-        .unwrap_or(default)
 }
 
 pub fn parse_type<'a>(element: DomElement<'a>) -> TopLevelType<'a> {

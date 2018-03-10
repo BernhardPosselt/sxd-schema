@@ -1,17 +1,21 @@
 pub mod elements;
 pub mod types;
 pub mod versions;
+pub mod annotations;
 
 extern crate sxd_document;
 
 use sxd_document::dom::{
     Root,
     Element as DomElement,
+    Attribute as DomAttribute,
     ChildOfElement,
 };
+
 use std::iter::Filter;
 use std::slice::Iter;
 use std::iter::FilterMap;
+use parser::types::Id;
 
 static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
 
@@ -26,6 +30,36 @@ fn is_schema(element: &DomElement) -> bool {
     is_of_element(&element, "schema")
 }
 
+#[inline]
+fn extract_element<'a>(element: &ChildOfElement<'a>) -> Option<DomElement<'a>> {
+    match element {
+        &ChildOfElement::Element(e) => Some(e),
+        _ => None
+    }
+}
+
+pub fn parse_id<'a>(element: &DomElement<'a>) -> Option<Id<'a>> {
+    element.attribute("id")
+        .map(|attr| Id { id: &attr.value() })
+}
+
+pub fn parse_additional_attributes<'a>(element: &DomElement<'a>) -> Vec<DomAttribute<'a>> {
+    element.attributes().into_iter()
+        .filter(|&attr| {
+            match attr.name().namespace_uri() {
+                Some(namespace) => namespace != XSD_NS_URI,
+                _ => false
+            }
+        })
+        .collect()
+}
+
+pub fn parse_boolean_attribute<'a>(element: &DomElement<'a>, name: &str, default: bool) -> bool {
+    element.attribute(name)
+        .map(|attr| attr.value() == "true")
+        .unwrap_or(default)
+}
+
 pub fn find_schema_children<'a>(root: Root<'a>) -> Vec<DomElement<'a>> {
     root.children().iter()
         .filter_map(|&child| child.element())
@@ -33,14 +67,6 @@ pub fn find_schema_children<'a>(root: Root<'a>) -> Vec<DomElement<'a>> {
         .flat_map(|schema_element| schema_element.children().into_iter())
         .filter_map(|child| child.element())
         .collect()
-}
-
-#[inline]
-fn extract_element<'a>(element: &ChildOfElement<'a>) -> Option<DomElement<'a>> {
-    match element {
-        &ChildOfElement::Element(e) => Some(e),
-        _ => None
-    }
 }
 
 /// Selects a matching element from the given element's children and runs the map function on it
