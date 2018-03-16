@@ -3,7 +3,7 @@ extern crate sxd_document;
 use sxd_document::{parser as DomParser, Package};
 use sxd_document::dom::{Document};
 
-use parser::{find_schema_children};
+use parser::{find_schema_children, parse_schema};
 use parser::elements::{parse_elements, Element};
 use parser::versions::{parse_version, SchemaVersion};
 use parser::types::{parse_types, TopLevelType};
@@ -59,6 +59,7 @@ impl<'a> Schema<'a> {
     pub fn from_document<'b>(document: &'b Document) -> Result<Schema<'b>, SchemaError> {
         let version = parse_version(&document);
         let children = find_schema_children(document.root());
+        let schema_meta = parse_schema(document.root());
 
         let schema = Schema {
             version: version,

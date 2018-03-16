@@ -113,7 +113,7 @@ mod tests {
 
         let annotation2 = annotations.get(1).unwrap();
         assert_eq!("annotation2", annotation2.id.as_ref().unwrap().id);
-        assert_eq!(0, annotation2.additional_attributes.len());
+         assert_eq!(0, annotation2.additional_attributes.len());
         assert_eq!(0, annotation2.app_info.len());
         assert_eq!(0, annotation2.documentation.len());
     }

@@ -16,6 +16,9 @@ use std::iter::Filter;
 use std::slice::Iter;
 use std::iter::FilterMap;
 use parser::types::Id;
+use std::collections::HashMap;
+use std::hash::Hash;
+use parser::annotations::Annotation;
 
 static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
 
@@ -26,7 +29,7 @@ fn is_of_element<'a>(element: &'a DomElement, element_name: &str) -> bool {
 }
 
 #[inline]
-fn is_schema(element: &DomElement) -> bool {
+pub fn is_schema(element: &DomElement) -> bool {
     is_of_element(&element, "schema")
 }
 
@@ -91,6 +94,63 @@ pub fn parse_children<'a, T, F, S>(element: &DomElement<'a>, select_func: S, map
         .collect()
 }
 
+/////////////////////////// refactored ///////////////////////////////////
+#[derive(Debug, Eq, PartialEq, Hash)]
+pub enum SchemaElement {
+    Schema
+}
+
+pub struct SchemaRoot<'a> {
+    annotations: Vec<Annotation<'a>>,
+}
+
+fn find_schema_group<'a>(element: &DomElement<'a>) -> Option<SchemaElement> {
+    if is_schema(&element) {
+        Some(SchemaElement::Schema)
+    } else {
+        None
+    }
+}
+
+#[inline]
+pub fn parse_schema<'a>(root: Root<'a>) -> SchemaRoot<'a> {
+    let groups = group_root_children(root, find_schema_group);
+    let schema = groups.get(&SchemaElement::Schema).into_iter()
+        .flat_map(|x| x.into_iter())
+        .next();
+
+    println!("{:?}", schema);
+
+    SchemaRoot {
+        annotations: vec![]
+    }
+}
+
+pub fn group_root_children<'a, K, G>(element: Root<'a>, groups: G) -> HashMap<K, Vec<DomElement<'a>>>
+    where G: Fn(&DomElement<'a>) -> Option<K>,
+          K: Eq + Hash {
+    let mut grouped_elements = HashMap::new();
+    for elem in element.children().into_iter().filter_map(|child| child.element()) {
+        if let Some(group) = groups(&elem) {
+            let results = grouped_elements.entry(group).or_insert(Vec::new());
+            results.push(elem);
+        };
+    }
+    return grouped_elements;
+}
+
+pub fn group_children<'a, K, G>(element: DomElement<'a>, groups: G) -> HashMap<K, Vec<DomElement<'a>>>
+    where G: Fn(&DomElement<'a>) -> Option<K>,
+          K: Eq + Hash {
+    let mut grouped_elements = HashMap::new();
+    for elem in element.children().into_iter().filter_map(|child| child.element()) {
+        if let Some(group) = groups(&elem) {
+            let results = grouped_elements.entry(group).or_insert(Vec::new());
+            results.push(elem);
+        };
+    }
+    return grouped_elements;
+}
 
 #[cfg(test)]
 mod tests {
@@ -109,6 +169,12 @@ mod tests {
     use parser::types::RestrictionRule;
     use parser::types::Pattern;
     use std::collections::HashSet;
+    #[test]
+    fn empty() {
+        let xml = include_str!("../../tests/parser/mod/empty.xsd");
+        let package = DomParser::parse(&xml);
+        assert_eq!(true, package.is_err());
+    }
 
     #[test]
     fn parse() {
