@@ -104,6 +104,13 @@ pub struct SchemaRoot<'a> {
     annotations: Vec<Annotation<'a>>,
 }
 
+#[derive(Debug)]
+pub enum SchemaError {
+    UnsupportedSchemaVersion,
+    NoSchemaRootFound,
+}
+
+
 fn find_schema_group<'a>(element: &DomElement<'a>) -> Option<SchemaElement> {
     if is_schema(&element) {
         Some(SchemaElement::Schema)
@@ -113,17 +120,22 @@ fn find_schema_group<'a>(element: &DomElement<'a>) -> Option<SchemaElement> {
 }
 
 #[inline]
-pub fn parse_schema<'a>(root: Root<'a>) -> SchemaRoot<'a> {
-    let groups = group_root_children(root, find_schema_group);
-    let schema = groups.get(&SchemaElement::Schema).into_iter()
-        .flat_map(|x| x.into_iter())
-        .next();
+pub fn parse_schema<'a>(root: Root<'a>) -> Result<SchemaRoot<'a>, SchemaError> {
+    let schema_elem = find_root_schema(root)
+        .ok_or(SchemaError::NoSchemaRootFound)?;
 
-    println!("{:?}", schema);
+    println!("{:?}", schema_elem);
 
-    SchemaRoot {
+    Ok(SchemaRoot {
         annotations: vec![]
-    }
+    })
+}
+
+pub fn find_root_schema<'a>(root: Root<'a>) -> Option<DomElement<'a>> {
+    root.children().into_iter()
+        .filter_map(|child| child.element())
+        .filter(|child| is_schema(&child))
+        .next()
 }
 
 pub fn group_root_children<'a, K, G>(element: Root<'a>, groups: G) -> HashMap<K, Vec<DomElement<'a>>>

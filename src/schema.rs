@@ -3,7 +3,7 @@ extern crate sxd_document;
 use sxd_document::{parser as DomParser, Package};
 use sxd_document::dom::{Document};
 
-use parser::{find_schema_children, parse_schema};
+use parser::{find_schema_children, parse_schema, SchemaError};
 use parser::elements::{parse_elements, Element};
 use parser::versions::{parse_version, SchemaVersion};
 use parser::types::{parse_types, TopLevelType};
@@ -19,10 +19,6 @@ pub struct Schema<'a> {
     pub annotations: Vec<Annotation<'a>>,
 }
 
-#[derive(Debug)]
-pub enum SchemaError {
-    UnsupportedSchemaVersion,
-}
 
 /// Makes sure that a schema is correct by validating it using the official schemas
 fn create_schema_spec<'a>(package: &'a Package) -> Schema<'a> {
@@ -59,7 +55,7 @@ impl<'a> Schema<'a> {
     pub fn from_document<'b>(document: &'b Document) -> Result<Schema<'b>, SchemaError> {
         let version = parse_version(&document);
         let children = find_schema_children(document.root());
-        let schema_meta = parse_schema(document.root());
+        let schema_meta = parse_schema(document.root())?;
 
         let schema = Schema {
             version: version,
