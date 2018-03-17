@@ -104,7 +104,7 @@ pub struct SchemaRoot<'a> {
     annotations: Vec<Annotation<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum SchemaError {
     UnsupportedSchemaVersion,
     NoSchemaRootFound,
@@ -170,6 +170,7 @@ mod tests {
 
     use sxd_document::parser as DomParser;
 
+    use super::*;
     use schema::*;
     use parser::versions::*;
     use parser::types::TopLevelType;
@@ -181,11 +182,22 @@ mod tests {
     use parser::types::RestrictionRule;
     use parser::types::Pattern;
     use std::collections::HashSet;
+
     #[test]
     fn empty() {
         let xml = include_str!("../../tests/parser/mod/empty.xsd");
         let package = DomParser::parse(&xml);
         assert_eq!(true, package.is_err());
+    }
+
+    #[test]
+    fn wrong_root() {
+        let xml = include_str!("../../tests/parser/mod/wrong-root.xsd");
+        let package = DomParser::parse(&xml).expect("Failed to parse");
+        let document = package.as_document();
+        let schema = Schema::from_document(&document);
+
+        assert_eq!(SchemaError::NoSchemaRootFound, schema.err().unwrap());
     }
 
     #[test]
