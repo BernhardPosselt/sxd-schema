@@ -2,6 +2,7 @@ pub mod elements;
 pub mod types;
 pub mod versions;
 pub mod annotations;
+pub mod schema;
 
 extern crate sxd_document;
 
@@ -22,18 +23,20 @@ use parser::annotations::Annotation;
 
 static XSD_NS_URI: &'static str = "http://www.w3.org/2001/XMLSchema";
 
-#[inline]
+#[derive(Eq, PartialEq, Debug)]
+pub struct Language<'a> {
+    pub iso_code: &'a str,
+}
+
 fn is_of_element<'a>(element: &'a DomElement, element_name: &str) -> bool {
     let name = element.name();
     return name.namespace_uri() == Some(XSD_NS_URI) && name.local_part() == element_name;
 }
 
-#[inline]
 pub fn is_schema(element: &DomElement) -> bool {
     is_of_element(&element, "schema")
 }
 
-#[inline]
 fn extract_element<'a>(element: &ChildOfElement<'a>) -> Option<DomElement<'a>> {
     match element {
         &ChildOfElement::Element(e) => Some(e),
@@ -119,7 +122,6 @@ fn find_schema_group<'a>(element: &DomElement<'a>) -> Option<SchemaElement> {
     }
 }
 
-#[inline]
 pub fn parse_schema<'a>(root: Root<'a>) -> Result<SchemaRoot<'a>, SchemaError> {
     let schema_elem = find_root_schema(root)
         .ok_or(SchemaError::NoSchemaRootFound)?;
@@ -171,7 +173,7 @@ mod tests {
     use sxd_document::parser as DomParser;
 
     use super::*;
-    use schema::*;
+    use parser::schema::*;
     use parser::versions::*;
     use parser::types::TopLevelType;
     use parser::types::SimpleType;

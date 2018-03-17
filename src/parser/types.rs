@@ -78,8 +78,6 @@ pub struct Id<'a> {
     pub id: &'a str,
 }
 
-
-
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#element-restriction
 #[derive(Eq, PartialEq, Debug)]
 pub struct Restriction<'a> {

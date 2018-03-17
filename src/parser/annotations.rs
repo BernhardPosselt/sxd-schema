@@ -10,6 +10,7 @@ use parser::{
     parse_id,
     parse_additional_attributes,
 };
+use parser::Language;
 
 /// see https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#anyURI
 #[derive(Eq, PartialEq, Debug)]
@@ -44,10 +45,7 @@ pub struct Annotation<'a> {
     pub documentation: Vec<Documentation<'a>>,
 }
 
-#[derive(Eq, PartialEq, Debug)]
-pub struct Language<'a> {
-    pub iso_code: &'a str,
-}
+
 
 pub fn parse_annotation<'a>(element: &DomElement<'a>) -> Option<Annotation<'a>> {
     parse_child(&element,
@@ -82,7 +80,8 @@ mod tests {
 
     use sxd_document::parser as DomParser;
 
-    use schema::*;
+    use parser::schema::*;
+    use parser::*;
     use parser::versions::*;
     use parser::types::TopLevelType;
     use parser::types::SimpleType;

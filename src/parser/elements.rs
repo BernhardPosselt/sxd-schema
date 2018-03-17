@@ -15,7 +15,6 @@ pub fn parse_elements<'a>(elements: &Vec<DomElement<'a>>) -> Vec<Element<'a>> {
         .collect()
 }
 
-#[inline]
 fn is_element(element: &DomElement) -> bool {
     is_of_element(&element, "element")
 }
